@@ -74,9 +74,9 @@ def tinyMazeSearch(problem):
     return [s, s, w, s, w, w, s, w]
 
 
-def search(fringe, visited, problem):
+def search(fringe, visited, problem, manage_fringe):
     while not fringe.isEmpty():
-        (c_position, c_path) = fringe.pop()
+        (c_position, c_path, c_cost) = fringe.pop()
         if problem.isGoalState(c_position):
             return c_path
 
@@ -84,7 +84,12 @@ def search(fringe, visited, problem):
             visited.add(c_position)
             for next_node, next_action, next_cost in problem.getSuccessors(c_position):
                 new_path = c_path + [next_action]
-                fringe.push((next_node, new_path))
+                new_cost = c_cost + next_cost
+                manage_fringe(
+                    fringe,
+                    (next_node, new_path, new_cost),
+                    new_cost
+                )
 
 
 def depthFirstSearch(problem):
@@ -101,37 +106,48 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
     from util import Stack
-    from game import Directions
     start_position = problem.getStartState()
     fringe = Stack()
-    fringe.push((start_position, []))
 
-    solution = search(fringe, set(), problem)
+    def manage_fringe(fringe, node, cost):
+        return fringe.push(node)
 
-    # return solution
+    fringe.push((start_position, [], 0))
+
+    solution = search(fringe, set(), problem, manage_fringe)
+
     return solution
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
     from util import Queue
-    from game import Directions
     start_position = problem.getStartState()
     fringe = Queue()
-    fringe.push((start_position, []))
-    solution = search(fringe, set(), problem)
 
-    # return solution
+    def manage_fringe(fringe, node, cost):
+        return fringe.push(node)
+
+    fringe.push((start_position, [], 0))
+    solution = search(fringe, set(), problem, manage_fringe)
+
     return solution
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue
+    start_position = problem.getStartState()
+    fringe = PriorityQueue()
+
+    def manage_fringe(fringe, node, cost):
+        return fringe.push(node, cost)
+
+    fringe.push((start_position, [], 0), 0)
+    solution = search(fringe, set(), problem, manage_fringe)
+
+    return solution
 
 
 def nullHeuristic(state, problem=None):
