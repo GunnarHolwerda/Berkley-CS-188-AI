@@ -74,6 +74,19 @@ def tinyMazeSearch(problem):
     return [s, s, w, s, w, w, s, w]
 
 
+def search(fringe, visited, problem):
+    while not fringe.isEmpty():
+        (c_position, c_path) = fringe.pop()
+        if problem.isGoalState(c_position):
+            return c_path
+
+        if c_position not in visited:
+            visited.add(c_position)
+            for next_node, next_action, next_cost in problem.getSuccessors(c_position):
+                new_path = c_path + [next_action]
+                fringe.push((next_node, new_path))
+
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -95,23 +108,10 @@ def depthFirstSearch(problem):
     fringe = Stack()
     fringe.push((start_position, []))
 
-    solution = depthFirstSearchHelper(fringe, set(), problem)
+    solution = search(fringe, set(), problem)
 
     # return solution
     return solution
-
-
-def depthFirstSearchHelper(fringe, visited, problem):
-    while not fringe.isEmpty():
-        (c_position, c_path) = fringe.pop()
-        if problem.isGoalState(c_position):
-            return c_path
-
-        if c_position not in visited:
-            visited.add(c_position)
-            for next_node, next_action, next_cost in problem.getSuccessors(c_position):
-                new_path = c_path + [next_action]
-                fringe.push((next_node, new_path))
 
 
 def breadthFirstSearch(problem):
@@ -120,11 +120,9 @@ def breadthFirstSearch(problem):
     from util import Queue
     from game import Directions
     start_position = problem.getStartState()
-    solution = []
     fringe = Queue()
-    fringe.push((start_position, None, 0))
-    depthFirstSearchHelper(fringe, set(), problem)
-    solution.reverse()
+    fringe.push((start_position, []))
+    solution = search(fringe, set(), problem)
 
     # return solution
     return solution
