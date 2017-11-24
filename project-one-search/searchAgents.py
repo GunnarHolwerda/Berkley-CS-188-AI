@@ -306,6 +306,7 @@ class CornersProblem(search.SearchProblem):
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height - 2, self.walls.width - 2
+        # Bottom left, top left, bottom right, top right
         self.corners = ((1, 1), (1, top), (right, 1), (right, top))
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
@@ -324,10 +325,10 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         return (
             self.startingPosition,
-            False,  # Not visited top right
+            False,  # Not visited bot left
             False,  # Not visited top left
             False,  # Not visited bottom right
-            False  # Not visted bottom left
+            False  # Not visted top right
         )
 
     def isGoalState(self, state):
@@ -360,12 +361,12 @@ class CornersProblem(search.SearchProblem):
             next_position = (nextx, nexty)
             if not self.walls[nextx][nexty]:
                 cost = 1
-                visited_top_right = state[1] or next_position == self.corners[3]
-                visited_top_left = state[2] or next_position == self.corners[1]
-                visited_bottom_right = state[3] or next_position == self.corners[0]
-                visited_bottom_left = state[4] or next_position == self.corners[2]
-                next_state = (next_position, visited_top_right,
-                              visited_top_left, visited_bottom_right, visited_bottom_left)
+                v_bot_left = state[1] or next_position == self.corners[0]
+                v_top_left = state[2] or next_position == self.corners[1]
+                v_bot_right = state[3] or next_position == self.corners[2]
+                v_top_right = state[4] or next_position == self.corners[3]
+                next_state = (next_position, v_bot_left,
+                              v_top_left, v_bot_right, v_top_right)
                 successors.append((next_state, action, cost))
 
         self._expanded += 1  # DO NOT CHANGE
@@ -405,7 +406,14 @@ def cornersHeuristic(state, problem):
     walls = problem.walls
 
     "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    from util import manhattanDistance
+
+    costs = [0]
+    for i in range(0, len(corners)):
+        if not state[i + 1]:
+            costs.append(manhattanDistance(state[0], corners[i]))
+
+    return max(costs)
 
 
 class AStarCornersAgent(SearchAgent):

@@ -166,8 +166,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     fringe = PriorityQueue()
 
     def manage_fringe(fringe, node, cost):
-        (position, _, _) = node
-        return fringe.push(node, heuristic(position, problem))
+        return fringe.update(node, cost + heuristic(node[0], problem))
 
     fringe.push((start_state, [], 0), 0)
     solution = search(fringe, set(), problem, manage_fringe)
