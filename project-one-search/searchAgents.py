@@ -322,12 +322,12 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        (bottom_left, top_left, bottom_right, top_right) = self.corners
         return (
-            self.gameState.hasFood(*bottom_left),
-            self.gameState.hasFood(*top_left),
-            self.gameState.hasFood(*bottom_right),
-            self.gameState.hasFood(*top_right),
+            self.startingPosition,
+            False,  # Not visited top right
+            False,  # Not visited top left
+            False,  # Not visited bottom right
+            False  # Not visted bottom left
         )
 
     def isGoalState(self, state):
@@ -335,7 +335,7 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        return state == (False, False, False, False)
+        return state[1] and state[2] and state[3] and state[4]
 
     def getSuccessors(self, state):
         """
@@ -351,13 +351,22 @@ class CornersProblem(search.SearchProblem):
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-
-            "*** YOUR CODE HERE ***"
+            # Here's a code snippet for figuring out whether a new position
+            # hits a wall:
+            x, y = state[0]
+            # print 'x: %d, y: %d' % (x, y)
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            next_position = (nextx, nexty)
+            if not self.walls[nextx][nexty]:
+                cost = 1
+                visited_top_right = state[1] or next_position == self.corners[3]
+                visited_top_left = state[2] or next_position == self.corners[1]
+                visited_bottom_right = state[3] or next_position == self.corners[0]
+                visited_bottom_left = state[4] or next_position == self.corners[2]
+                next_state = (next_position, visited_top_right,
+                              visited_top_left, visited_bottom_right, visited_bottom_left)
+                successors.append((next_state, action, cost))
 
         self._expanded += 1  # DO NOT CHANGE
         return successors
