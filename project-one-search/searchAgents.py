@@ -518,14 +518,44 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
     from util import manhattanDistance
+    if 'food_list' not in problem.heuristicInfo:
+        problem.heuristicInfo['food_list'] = foodGrid.asList()
+        problem.heuristicInfo['food_count'] = len(
+            problem.heuristicInfo['food_list'])
 
-    costs = [0]
-    food_list = foodGrid.asList()
-    for i in range(0, len(food_list)):
-        position = food_list[i]
-        if foodGrid.data[position[0]][position[1]]:
-            costs.append(manhattanDistance(state[0], food_list[i]))
-    return max(costs)
+    farthest_distance = 0
+    food_list = problem.heuristicInfo['food_list']
+    for i in range(0, problem.heuristicInfo['food_count']):
+        (x, y) = food_list[i]
+        if foodGrid.data[x][y]:
+            hasWall = False
+            for j in range(x, position[0], -1 if position[0] < x else 1):
+                if problem.walls.data[j][y]:
+                    hasWall = True
+                    break
+            for h in range(position[0], x, 1 if position[0] > x else -1):
+                if problem.walls.data[h][y]:
+                    hasWall = True
+                    break
+            for k in range(y, position[1], 1 if position[1] < y else -1):
+                if problem.walls.data[x][k]:
+                    hasWall = True
+                    break
+            for g in range(position[1], y, -1 if position[1] > y else 1):
+                if problem.walls.data[x][g]:
+                    hasWall = True
+                    break
+            distance = 0
+            if hasWall:
+                if (state[0], food_list[i]) not in problem.heuristicInfo:
+                    problem.heuristicInfo[(state[0], food_list[i])] = distance = mazeDistance(
+                        state[0], food_list[i], problem.startingGameState)
+                distance = problem.heuristicInfo[(state[0], food_list[i])]
+            else:
+                distance = manhattanDistance(state[0], food_list[i])
+
+            farthest_distance = farthest_distance if distance < farthest_distance else distance
+    return farthest_distance
 
 
 class ClosestDotSearchAgent(SearchAgent):
